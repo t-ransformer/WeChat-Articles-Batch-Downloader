@@ -1,0 +1,33 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 输出文件
+output/
+*.html
+# 只忽略output目录下的md文件，保留项目根目录的md文档
+output/**/*.md
+
+# Excel文件
+*.xlsx
+*.xls
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 配置文件（如果包含敏感信息）
+config.py
+urls.txt
+
