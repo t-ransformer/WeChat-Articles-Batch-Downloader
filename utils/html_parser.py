@@ -33,8 +33,8 @@ class WeChatArticleParser:
             try:
                 response = self.session.get(url, timeout=REQUEST_TIMEOUT)
                 response.raise_for_status()
-                # 处理编码
-                response.encoding = response.apparent_encoding or 'utf-8'
+                # 强制使用UTF-8编码（微信文章都是UTF-8）
+                response.encoding = 'utf-8'
                 return response.text
             except requests.RequestException as e:
                 if attempt < MAX_RETRIES - 1:
