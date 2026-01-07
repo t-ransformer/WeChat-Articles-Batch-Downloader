@@ -43,11 +43,6 @@ class WeChatArticleDownloader:
             title: 文章标题
             publish_time: 发布时间
         """
-        # 清理文件名
-        safe_title = self.sanitize_filename(title)
-        if len(safe_title) > 100:
-            safe_title = safe_title[:100]
-        
         # 格式化时间用于文件名
         try:
             dt = datetime.strptime(publish_time, '%Y-%m-%d %H:%M:%S')
@@ -55,9 +50,12 @@ class WeChatArticleDownloader:
         except:
             time_str = datetime.now().strftime('%Y%m%d_%H%M%S')
         
-        filename = f"{safe_title}_{time_str}.md"
+        # 使用简单的时间戳+索引作为文件名，避免中文编码问题
+        # 标题保存在文件内容中，文件名只用时间戳
+        filename = f"article_{time_str}.md"
         filepath = os.path.join(MARKDOWN_DIR, filename)
         
+        # 确保内容以UTF-8编码保存
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(markdown_content)
         
@@ -138,32 +136,51 @@ class WeChatArticleDownloader:
             print(f"  作者: {author}")
             print(f"  时间: {publish_time}")
             
-            # 3. 下载图片并更新HTML
+            # 3. 创建文章目录（用"标题_作者"命名）
+            # 清理文件名中的非法字符
+            safe_title = self.sanitize_filename(title)
+            safe_author = self.sanitize_filename(author)
+            
+            # 如果标题+作者太长，截断标题但保留完整作者名
+            max_title_len = 50 - len(safe_author) - 1  # 减1是为了下划线
+            if max_title_len < 10:
+                max_title_len = 40  # 最少保留40字符给标题
+            if len(safe_title) > max_title_len:
+                safe_title = safe_title[:max_title_len]
+            
+            article_dir_name = f"{safe_title}_{safe_author}"
+            article_dir = os.path.join(MARKDOWN_DIR, article_dir_name)
+            os.makedirs(article_dir, exist_ok=True)
+            
+            # 4. 下载图片到文章目录
             print("  下载图片...")
             content_html, image_map = self.image_downloader.download_images_from_html(
-                content_html, title, article_index
+                content_html, article_dir, article_index
             )
             print(f"  已下载 {len(image_map)} 张图片")
             
-            # 4. 转换为Markdown
+            # 5. 转换为Markdown
             print("  转换为Markdown...")
             markdown_content = self.markdown_converter.html_to_markdown(content_html)
             markdown_content = self.markdown_converter.add_metadata(
                 markdown_content, title, author, publish_time, url
             )
             
-            # 5. 保存Markdown文件
+            # 6. 保存Markdown文件到文章目录
             print("  保存文件...")
-            md_path = self.save_markdown(markdown_content, title, publish_time)
+            md_filename = "article.md"
+            md_path = os.path.join(article_dir, md_filename)
+            with open(md_path, 'w', encoding='utf-8') as f:
+                f.write(markdown_content)
             
-            print(f"  ✓ Markdown已保存: {md_path}")
+            print(f"  ✓ 已保存到: {article_dir}")
             
             return {
                 'success': True,
                 'skipped': False,
                 'title': title,
                 'url': url,
-                'md_path': md_path,
+                'article_dir': article_dir,
                 'images_count': len(image_map)
             }
             
