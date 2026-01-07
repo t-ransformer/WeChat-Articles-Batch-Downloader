@@ -115,13 +115,13 @@ class ImageDownloader:
             print(f"下载图片失败 {url}: {str(e)}")
             return False
     
-    def download_images_from_html(self, html_content, article_title, article_index=0):
+    def download_images_from_html(self, html_content, article_dir, article_index=0):
         """
         从HTML中提取并下载所有图片
         
         Args:
             html_content: HTML内容
-            article_title: 文章标题（用于命名）
+            article_dir: 文章所在目录（图片保存到这里）
             article_index: 文章索引（用于区分多篇文章）
             
         Returns:
@@ -129,11 +129,6 @@ class ImageDownloader:
         """
         soup = BeautifulSoup(html_content, 'lxml')
         images = soup.find_all('img')
-        
-        # 清理文章标题用于文件名
-        safe_title = self.sanitize_filename(article_title)
-        if len(safe_title) > 50:
-            safe_title = safe_title[:50]
         
         image_map = {}  # 原始URL -> 本地路径的映射
         image_counter = 0
@@ -161,12 +156,13 @@ class ImageDownloader:
                 # 下载图片
                 image_counter += 1
                 ext = self.get_image_extension(src)
-                filename = f"{safe_title}_{article_index:03d}_{image_counter:03d}{ext}"
-                save_path = os.path.join(IMAGES_DIR, filename)
+                # 使用简单的数字编号
+                filename = f"{image_counter}{ext}"
+                save_path = os.path.join(article_dir, filename)
                 
                 if self.download_image(src, save_path):
-                    # 使用相对路径
-                    local_path = f"images/{filename}"
+                    # 使用相对路径（图片和markdown在同一目录）
+                    local_path = filename
                     image_map[original_src] = local_path
                     # 也映射处理后的URL
                     if src != original_src:
