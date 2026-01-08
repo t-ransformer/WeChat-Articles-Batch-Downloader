@@ -11,6 +11,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.path.join(BASE_DIR, "output")
 MARKDOWN_DIR = os.path.join(OUTPUT_DIR, "markdown")
 IMAGES_DIR = os.path.join(OUTPUT_DIR, "images")
+PDF_DIR = os.path.join(OUTPUT_DIR, "pdf")
 
 # 请求配置
 REQUEST_TIMEOUT = 30  # 请求超时时间（秒）

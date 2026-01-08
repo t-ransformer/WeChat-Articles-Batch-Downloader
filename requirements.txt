@@ -4,4 +4,5 @@ markdownify>=0.11.6
 lxml>=4.9.0
 Pillow>=10.0.0
 openpyxl>=3.1.0
+playwright>=1.40.0
 

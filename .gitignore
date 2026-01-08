@@ -34,3 +34,7 @@ urls.txt
 # 私有文档目录（仅限开发者使用，不上传到GitHub）
 .private/
 
+# 测试输出目录
+tests/output/
+tests/**/output/
+
