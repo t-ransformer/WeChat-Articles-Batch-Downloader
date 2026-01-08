@@ -99,6 +99,12 @@ class MarkdownConverter:
         # 需要将 images/ 改为 ../images/
         markdown_content = re.sub(r'!\[([^\]]*)\]\(images/([^)]+)\)', r'![\1](../images/\2)', markdown_content)
         
+        # 修复KaTeX格式错误：修复数字后跟中文冒号和公式的错误格式
+        # 1. 修复 "数字：$$" 格式（中文冒号改为英文点号）
+        markdown_content = re.sub(r'(\d+)[：:](\$\$)', r'\1.\2', markdown_content)
+        # 2. 修复 "数字:$公式$" 格式（中文冒号改为英文点号，单个$改为$$）
+        markdown_content = re.sub(r'(\d+)[：:](\$)([^$]+?)(\$)', r'\1. $$\3$$', markdown_content)
+        
         # 后处理：清理多余的空行
         markdown_content = self._clean_markdown(markdown_content)
         
