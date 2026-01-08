@@ -15,6 +15,9 @@ output/**/*.md
 # Excel文件
 *.xlsx
 *.xls
+# 但允许测试数据文件
+!tests/test_data/*.xlsx
+!tests/test_data/*.xls
 
 # IDE
 .vscode/
