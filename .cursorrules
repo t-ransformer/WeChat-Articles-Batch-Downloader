@@ -1,0 +1,202 @@
+# WeChat Articles Batch Downloader - Cursor Rules
+
+## 项目概述
+
+这是一个Python项目，用于批量下载微信公众号文章并转换为Markdown格式。项目从wechat-article-exporter工具导出的Excel文件中提取URL并批量下载文章。
+
+### 主要功能
+- 从Excel文件提取URL并批量下载
+- 提取文章标题、作者、发布时间
+- 下载文章中的所有图片到本地
+- 将HTML转换为Markdown格式（支持LaTeX公式）
+- 自动处理文件名中的非法字符
+
+## 代码规范
+
+### Python代码风格
+- 遵循PEP 8代码风格规范
+- 使用4个空格缩进，不使用Tab
+- 行长度限制：建议不超过100字符
+- 类名使用PascalCase，函数和变量名使用snake_case
+
+### 文件编码和格式
+- 所有Python文件使用UTF-8编码
+- 文件开头必须包含编码声明：`# -*- coding: utf-8 -*-`
+- 可执行脚本开头添加shebang：`#!/usr/bin/env python3`
+
+### 文档字符串
+- 使用中文编写文档字符串和注释
+- 模块级文档字符串：说明模块功能
+- 类文档字符串：说明类的用途
+- 方法文档字符串：使用Google风格，包含Args和Returns说明
+
+示例：
+```python
+def html_to_markdown(self, html_content):
+    """
+    将HTML转换为Markdown
+    
+    Args:
+        html_content: HTML内容
+        
+    Returns:
+        str: Markdown内容
+    """
+```
+
+### 错误处理
+- 使用try-except捕获异常
+- 提供有意义的错误信息（中文）
+- 记录错误日志，便于调试
+
+### 导入顺序
+1. 标准库导入
+2. 第三方库导入
+3. 本地模块导入
+
+## 文件组织
+
+### 目录结构
+```
+WeChat-Articles-Batch-Downloader/
+├── utils/              # 核心工具模块
+│   ├── html_parser.py          # HTML解析器
+│   ├── image_downloader.py     # 图片下载器
+│   └── markdown_converter.py   # Markdown转换器
+├── output/             # 输出目录（已忽略）
+│   ├── html/          # HTML文件
+│   ├── markdown/       # Markdown文件
+│   └── images/         # 图片文件
+├── config.py           # 配置文件（不提交，使用config.example.py）
+├── config.example.py   # 配置文件模板
+├── wechat_article_downloader.py  # 主程序
+└── .private/           # 私有文档目录（不提交到GitHub）
+```
+
+### 文件命名
+- Python文件：使用snake_case，如 `markdown_converter.py`
+- 配置文件：`config.py`（不提交），`config.example.py`（提交）
+- 输出文件：自动生成，包含标题和时间戳
+
+### 配置文件
+- `config.py`：包含实际配置（已添加到.gitignore）
+- `config.example.py`：配置文件模板，提交到仓库
+- 用户需要复制`config.example.py`为`config.py`并修改配置
+
+## Git提交规范
+
+### Commit Message格式
+- 使用中文编写commit message
+- 格式：简短描述（50字以内）+ 详细说明（可选）
+- 第一行：简要说明修改内容
+- 详细说明：使用列表形式说明具体修改点
+
+示例：
+```
+修复Markdown转换器中的LaTeX公式转换问题
+
+- 从HTML中提取MathJax公式并转换为Markdown LaTeX格式
+- 修复公式中的转义字符（下划线、美元符号、LaTeX命令）
+- 修复图片路径使用相对路径（../images/）
+- 将元数据移至文档末尾而非开头
+```
+
+### 提交前检查
+- 运行代码语法检查：`python3 -m py_compile <file>`
+- 检查lint错误
+- 确保没有调试代码和临时文件
+- 确保配置文件不会被提交（config.py）
+- **确保私有文档不会被提交（.private/目录）**
+
+### 不提交的文件
+- 输出文件：`output/` 目录
+- 配置文件：`config.py`
+- **私有文档：`.private/` 目录（仅限开发者使用，不上传到GitHub）**
+- 临时脚本：用于一次性修复的脚本
+- 日志文件：`*.log`
+- Excel文件：`*.xlsx`, `*.xls`
+
+## 私有文档管理
+
+### .private/ 目录说明
+**重要：所有仅限开发者查看的文档必须放在 `.private/` 目录中，这些文件不会提交到GitHub。**
+
+### 应放入.private/的文档类型
+- PR处理指南：`PR_HANDLING_GUIDE.md`
+- GitHub设置指南：`GITHUB_SETUP.md`
+- Commit分析文档：`COMMIT_*.md`, `*_ANALYSIS.md`
+- 项目组织计划：`CATALOG_ORGANIZATION_PLAN.md`
+- 文件夹结构对比：`FOLDER_STRUCTURE_COMPARISON.md`
+- PR回复模板：`PR_RESPONSE.md`
+- Git操作脚本：`CHERRY_PICK_COMMANDS.sh`
+- 其他仅限开发者使用的文档
+
+### 处理原则
+- **创建新文档时**：如果是仅限开发者使用的文档，直接创建在`.private/`目录
+- **移动现有文档**：如果发现项目根目录有私有文档，应移动到`.private/`目录
+- **不要提交**：`.private/`目录已在`.gitignore`中，确保不会意外提交
+
+### 临时脚本
+- 用于一次性修复的脚本不提交到仓库
+- 如：`regenerate_markdown_with_formulas.py`、`fix_metadata_position.py`
+- 这些脚本的核心功能已集成到主代码中
+- 如果只是临时使用，可以放在`.private/`目录或直接删除
+
+## 特殊功能处理
+
+### LaTeX公式转换
+- 从HTML的`<mjx-container>`标签中提取LaTeX源码
+- 区分行内公式（`$...$`）和块级公式（`$$...$$`）
+- 修复转义字符：下划线、美元符号、LaTeX命令
+- 移除非断行空格字符
+
+### 图片路径处理
+- Markdown文件在`markdown/`目录
+- 图片文件在`images/`目录
+- 使用相对路径：`../images/xxx.jpg`
+
+### 元数据位置
+- 文章标题放在文档开头：`# 标题`
+- 元数据（作者、发布时间、原文链接）放在文档末尾
+- 使用分隔线：`---`
+
+### 文件名处理
+- 移除非法字符：`/`, `\`, `:`, `*`, `?`, `"`, `<`, `>`, `|`
+- 文件名格式：`{标题}_{时间戳}.md`
+- 标题过长时截断到100字符
+
+## 开发建议
+
+### 添加新功能时
+1. 在`utils/`目录下创建新模块或扩展现有模块
+2. 添加适当的文档字符串和注释
+3. 更新`requirements.txt`（如需要新依赖）
+4. 更新README.md（如需要）
+
+### 修改现有功能时
+1. 保持向后兼容性
+2. 更新相关文档字符串
+3. 确保不影响现有功能
+4. 添加适当的错误处理
+
+### 创建文档时
+1. **判断文档性质**：是否仅限开发者使用？
+2. **如果是私有文档**：创建在`.private/`目录
+3. **如果是公开文档**：创建在项目根目录（如README.md、QUICKSTART.md）
+
+### 测试建议
+- 使用示例HTML文件测试转换功能
+- 验证LaTeX公式转换正确
+- 检查图片路径是否正确
+- 确认元数据位置正确
+
+## 注意事项
+
+- 不要提交包含敏感信息的配置文件
+- 不要提交输出文件（output目录）
+- **不要提交私有文档（.private/目录）**
+- 不要提交临时脚本和调试代码
+- 提交前确保代码可以正常运行
+- 保持代码风格一致性
+- **创建仅限开发者使用的文档时，必须放在.private/目录**
+
