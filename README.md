@@ -8,7 +8,9 @@
 - ✅ 批量下载公众号文章
 - ✅ 自动提取文章标题、作者、发布时间
 - ✅ 下载文章中的所有图片到本地
-- ✅ 保存为Markdown格式（包含图片引用）
+- ✅ 支持多种格式：Markdown和PDF（可单独选择或同时生成）
+- ✅ 保存为Markdown格式（包含图片引用，支持LaTeX数学公式）
+- ✅ 生成PDF格式（完美保留排版和样式）
 - ✅ 自动处理文件名中的非法字符
 - ✅ 错误重试机制
 
@@ -38,7 +40,7 @@ python wechat_article_downloader.py 微信公众号文章.xlsx
 就这么简单！程序会自动：
 1. 从Excel文件提取所有URL
 2. 批量下载所有文章和图片
-3. 保存为Markdown格式
+3. 同时生成Markdown和PDF格式（默认）
 
 ## 📖 详细使用说明
 
@@ -73,6 +75,23 @@ python wechat_article_downloader.py -u "https://mp.weixin.qq.com/s/xxxxx"
 python wechat_article_downloader.py -u "url1" "url2" "url3"
 ```
 
+### 方法4：选择下载格式
+
+您可以选择只下载Markdown、只下载PDF，或两者都下载（默认）：
+
+```bash
+# 仅下载Markdown格式
+python wechat_article_downloader.py --format md 微信公众号文章.xlsx
+
+# 仅下载PDF格式
+python wechat_article_downloader.py --format pdf 微信公众号文章.xlsx
+
+# 同时下载Markdown和PDF（默认）
+python wechat_article_downloader.py --format both 微信公众号文章.xlsx
+# 或直接省略 --format 参数
+python wechat_article_downloader.py 微信公众号文章.xlsx
+```
+
 ## 📁 输出结构
 
 下载的文件会保存在 `output/` 目录下：
@@ -80,12 +99,17 @@ python wechat_article_downloader.py -u "url1" "url2" "url3"
 ```
 output/
 ├── markdown/    # Markdown格式文章
+├── pdf/         # PDF格式文章（如果选择生成PDF）
 └── images/      # 下载的图片
 ```
 
-文件命名格式：`文章标题_发布时间.md`
+文件命名格式：
+- Markdown: `文章标题_发布时间.md`
+- PDF: `文章标题_发布时间.pdf`
 
 Markdown文件中的图片使用相对路径 `images/xxx.jpg`，确保Markdown文件与images目录的相对位置正确。
+
+**注意**：Markdown文件支持LaTeX数学公式（使用 `$...$` 和 `$$...$$` 格式），程序会自动修复常见的公式格式错误。
 
 ## ⚙️ 配置说明
 
@@ -129,6 +153,20 @@ A: 可能是网络问题或文章已删除。程序会自动重试3次，如果�
 
 A: Excel文件应包含文章URL列（列名可能为"链接"、"URL"、"文章链接"等）。程序会自动识别包含 `mp.weixin.qq.com/s/` 的列。
 
+### Q: 如何只下载Markdown或只下载PDF？
+
+A: 使用 `--format` 参数：
+- `--format md`：仅生成Markdown文件
+- `--format pdf`：仅生成PDF文件
+- `--format both`：同时生成两种格式（默认）
+
+### Q: PDF生成失败怎么办？
+
+A: PDF生成需要额外的依赖包。如果失败，请检查：
+- 是否安装了所有依赖（`pip install -r requirements.txt`）
+- 是否有足够的磁盘空间
+- 如果PDF生成失败，程序会继续生成Markdown文件，不会影响整体下载流程
+
 ## 📦 依赖包说明
 
 - `requests`: HTTP请求库
@@ -137,6 +175,8 @@ A: Excel文件应包含文章URL列（列名可能为"链接"、"URL"、"文章�
 - `lxml`: HTML解析器
 - `Pillow`: 图片处理库
 - `openpyxl`: Excel文件处理库（用于从Excel提取URL）
+- `pdfkit` / `weasyprint`: PDF生成库（用于生成PDF格式）
+- `markdown`: Markdown处理库（用于LaTeX公式支持）
 
 ## 🙏 致谢
 
