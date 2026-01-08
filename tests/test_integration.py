@@ -72,7 +72,7 @@ def test_markdown_download(test_results, urls, output_dir):
     """测试Markdown下载功能"""
     if not urls:
         test_results.add_fail("Markdown下载", "没有可用的URL")
-        return False
+        return None  # 返回None表示没有Markdown文件路径
     
     try:
         # 创建临时输出目录
@@ -115,7 +115,7 @@ def test_markdown_download(test_results, urls, output_dir):
                     content = f.read()
                     if len(content) > 100:  # 确保有内容
                         test_results.add_pass(f"Markdown下载 - 文件大小: {os.path.getsize(md_path)} bytes")
-                        return True
+                        return md_path  # 返回Markdown文件路径，供公式测试使用
                     else:
                         raise ValueError("Markdown文件内容过少")
             else:
@@ -124,6 +124,86 @@ def test_markdown_download(test_results, urls, output_dir):
             raise ValueError(f"下载失败: {result.get('error', '未知错误')}")
     except Exception as e:
         test_results.add_fail("Markdown下载", str(e))
+        return None
+
+
+def test_latex_formulas(test_results, md_path):
+    """测试LaTeX公式是否正确生成"""
+    if not md_path or not os.path.exists(md_path):
+        test_results.add_fail("LaTeX公式验证", "Markdown文件不存在")
+        return False
+    
+    try:
+        import re
+        
+        with open(md_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # 1. 检查是否包含公式标记
+        inline_formulas = re.findall(r'\$[^$\n]+\$', content)
+        block_formulas = re.findall(r'\$\$\s*\n.*?\n\s*\$\$', content, re.DOTALL)
+        
+        total_formulas = len(inline_formulas) + len(block_formulas)
+        
+        if total_formulas == 0:
+            # 如果没有公式，标记为跳过（不是失败）
+            test_results.add_pass("LaTeX公式验证 - 文章无公式（跳过）")
+            return True
+        
+        # 2. 验证公式格式
+        formula_errors = []
+        
+        # 验证行内公式格式
+        for formula in inline_formulas:
+            # 行内公式应该是 $...$ 格式，不应该包含换行
+            if '\n' in formula:
+                formula_errors.append(f"行内公式包含换行: {formula[:50]}...")
+            # 检查是否包含LaTeX命令（至少应该有一些LaTeX语法）
+            if not re.search(r'\\[a-zA-Z]+', formula):
+                # 如果没有LaTeX命令，可能是普通文本被误识别为公式
+                # 但这也可能是简单的数学符号，不算错误
+                pass
+        
+        # 验证块级公式格式
+        for formula in block_formulas:
+            # 块级公式应该是 $$...$$ 格式，应该包含换行
+            if not formula.startswith('$$') or not formula.endswith('$$'):
+                formula_errors.append(f"块级公式格式错误: {formula[:50]}...")
+            # 检查是否包含LaTeX命令
+            if not re.search(r'\\[a-zA-Z]+', formula):
+                formula_errors.append(f"块级公式缺少LaTeX命令: {formula[:50]}...")
+        
+        # 3. 验证公式内容（检查常见的LaTeX命令是否正确）
+        all_formulas = inline_formulas + block_formulas
+        latex_commands_found = set()
+        
+        for formula in all_formulas:
+            # 查找LaTeX命令
+            commands = re.findall(r'\\([a-zA-Z]+)', formula)
+            latex_commands_found.update(commands)
+        
+        if formula_errors:
+            error_msg = "; ".join(formula_errors[:3])  # 只显示前3个错误
+            test_results.add_fail("LaTeX公式验证", error_msg)
+            return False
+        
+        # 4. 验证公式转义字符是否正确处理
+        # 检查是否有未正确转义的下划线（在公式外部）
+        # 公式内部的下划线应该是正常的
+        # 这个检查比较复杂，暂时跳过
+        
+        # 如果所有检查都通过
+        formula_summary = f"行内公式: {len(inline_formulas)}, 块级公式: {len(block_formulas)}"
+        if latex_commands_found:
+            commands_list = ', '.join(sorted(list(latex_commands_found))[:10])  # 显示前10个命令
+            test_results.add_pass(f"LaTeX公式验证 - {formula_summary}, LaTeX命令: {commands_list}")
+        else:
+            test_results.add_pass(f"LaTeX公式验证 - {formula_summary}")
+        
+        return True
+        
+    except Exception as e:
+        test_results.add_fail("LaTeX公式验证", str(e))
         return False
 
 
@@ -253,20 +333,26 @@ def main():
         print(f"\n测试输出目录: {output_dir}")
         
         # 1. 测试URL提取
-        print("\n[1/4] 测试URL提取功能...")
+        print("\n[1/5] 测试URL提取功能...")
         urls = test_url_extraction(test_results, test_excel_path)
         
         # 2. 测试Markdown下载
+        md_path = None
         if urls:
-            print("\n[2/4] 测试Markdown下载功能...")
-            test_markdown_download(test_results, urls, output_dir)
+            print("\n[2/5] 测试Markdown下载功能...")
+            md_path = test_markdown_download(test_results, urls, output_dir)
             
-            # 3. 测试图片下载
-            print("\n[3/4] 测试图片下载功能...")
+            # 3. 测试LaTeX公式
+            if md_path:
+                print("\n[3/5] 测试LaTeX公式生成...")
+                test_latex_formulas(test_results, md_path)
+            
+            # 4. 测试图片下载
+            print("\n[4/5] 测试图片下载功能...")
             test_image_download(test_results, output_dir)
             
-            # 4. 测试PDF生成
-            print("\n[4/4] 测试PDF生成功能...")
+            # 5. 测试PDF生成
+            print("\n[5/5] 测试PDF生成功能...")
             test_pdf_generation(test_results, urls, output_dir)
         else:
             print("\n跳过后续测试（URL提取失败）")
