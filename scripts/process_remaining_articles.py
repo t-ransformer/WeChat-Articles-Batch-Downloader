@@ -10,7 +10,12 @@ import os
 import glob
 import sys
 import time
-from wechat_to_pdf_perfect import convert_wechat_article_to_pdf_perfect, get_url_from_markdown
+
+# 添加项目根目录到路径
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, project_root)
+
+from utils.wechat_to_pdf_perfect import convert_wechat_article_to_pdf_perfect, get_url_from_markdown
 
 markdown_dir = '/Users/fanyumeng/Documents/公众号/公众号文章导出/WeChat-Articles-Batch-Downloader/output/markdown'
 pdf_dir = '/Users/fanyumeng/Documents/公众号/公众号文章导出/WeChat-Articles-Batch-Downloader/output/pdf_perfect'

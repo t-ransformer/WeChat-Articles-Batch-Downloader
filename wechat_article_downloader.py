@@ -179,7 +179,7 @@ class WeChatArticleDownloader:
             if self.download_format in ('pdf', 'both'):
                 print("  生成PDF文件...")
                 try:
-                    from wechat_to_pdf_perfect import convert_wechat_article_to_pdf_perfect
+                    from utils.wechat_to_pdf_perfect import convert_wechat_article_to_pdf_perfect
                     pdf_path = convert_wechat_article_to_pdf_perfect(url, PDF_DIR)
                     if pdf_path:
                         print(f"  ✓ PDF已保存: {pdf_path}")
@@ -352,7 +352,7 @@ def main():
         print("=" * 60)
         print("检测到Excel文件，自动提取URL并下载...")
         print("=" * 60)
-        from extract_urls_from_excel import extract_urls_from_excel
+        from utils.extract_urls_from_excel import extract_urls_from_excel
         import tempfile
         
         temp_urls_file = os.path.join(tempfile.gettempdir(), 'wechat_urls_temp.txt')
