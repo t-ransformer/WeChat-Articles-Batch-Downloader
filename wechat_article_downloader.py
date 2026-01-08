@@ -8,7 +8,7 @@ import os
 import sys
 import argparse
 from datetime import datetime
-from config import MARKDOWN_DIR, INVALID_CHARS
+from config import MARKDOWN_DIR, PDF_DIR, INVALID_CHARS
 from utils.html_parser import WeChatArticleParser
 from utils.image_downloader import ImageDownloader
 from utils.markdown_converter import MarkdownConverter
@@ -17,13 +17,22 @@ from utils.markdown_converter import MarkdownConverter
 class WeChatArticleDownloader:
     """微信公众号文章下载器"""
     
-    def __init__(self):
+    def __init__(self, download_format='both'):
+        """
+        初始化下载器
+        
+        Args:
+            download_format: 下载格式，可选 'md'（仅Markdown）、'pdf'（仅PDF）、'both'（两者都下载，默认）
+        """
         self.parser = WeChatArticleParser()
         self.image_downloader = ImageDownloader()
         self.markdown_converter = MarkdownConverter()
+        self.download_format = download_format
         
         # 确保输出目录存在
         os.makedirs(MARKDOWN_DIR, exist_ok=True)
+        if self.download_format in ('pdf', 'both'):
+            os.makedirs(PDF_DIR, exist_ok=True)
     
     def sanitize_filename(self, filename):
         """清理文件名"""
@@ -152,20 +161,34 @@ class WeChatArticleDownloader:
                 markdown_content, title, author, publish_time, url
             )
             
-            # 5. 保存Markdown文件
-            print("  保存文件...")
-            md_path = self.save_markdown(markdown_content, title, publish_time)
-            
-            print(f"  ✓ Markdown已保存: {md_path}")
-            
-            return {
+            result = {
                 'success': True,
                 'skipped': False,
                 'title': title,
                 'url': url,
-                'md_path': md_path,
                 'images_count': len(image_map)
             }
+            
+            # 5. 根据用户选择保存文件
+            if self.download_format in ('md', 'both'):
+                print("  保存Markdown文件...")
+                md_path = self.save_markdown(markdown_content, title, publish_time)
+                print(f"  ✓ Markdown已保存: {md_path}")
+                result['md_path'] = md_path
+            
+            if self.download_format in ('pdf', 'both'):
+                print("  生成PDF文件...")
+                try:
+                    from wechat_to_pdf_perfect import convert_wechat_article_to_pdf_perfect
+                    pdf_path = convert_wechat_article_to_pdf_perfect(url, PDF_DIR)
+                    if pdf_path:
+                        print(f"  ✓ PDF已保存: {pdf_path}")
+                        result['pdf_path'] = pdf_path
+                except Exception as pdf_error:
+                    print(f"  ⚠️  PDF生成失败: {str(pdf_error)}")
+                    result['pdf_error'] = str(pdf_error)
+            
+            return result
             
         except Exception as e:
             print(f"  ✗ 处理失败: {str(e)}")
@@ -284,6 +307,15 @@ def main():
   
   # 指定多个URL
   python wechat_article_downloader.py -u "url1" "url2" "url3"
+  
+  # 选择下载格式：仅Markdown
+  python wechat_article_downloader.py --format md 微信公众号文章.xlsx
+  
+  # 选择下载格式：仅PDF
+  python wechat_article_downloader.py --format pdf 微信公众号文章.xlsx
+  
+  # 选择下载格式：两者都下载（默认）
+  python wechat_article_downloader.py --format both 微信公众号文章.xlsx
         """
     )
     
@@ -304,9 +336,16 @@ def main():
         help='文章URL（可以指定多个）'
     )
     
+    parser.add_argument(
+        '--format',
+        choices=['md', 'pdf', 'both'],
+        default='both',
+        help='下载格式：md（仅Markdown）、pdf（仅PDF）、both（两者都下载，默认）'
+    )
+    
     args = parser.parse_args()
     
-    downloader = WeChatArticleDownloader()
+    downloader = WeChatArticleDownloader(download_format=args.format)
     
     # 如果第一个参数是Excel文件，自动处理
     if args.input and args.input.endswith(('.xlsx', '.xls')):
