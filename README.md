@@ -1,6 +1,6 @@
 # 微信公众号文章批量下载工具
 
-一个用于批量下载微信公众号文章并保存为Markdown格式的Python工具。从 [wechat-article-exporter](https://github.com/wechat-article/wechat-article-exporter) 工具导出的Excel文件中提取URL并批量下载。
+一个用于批量下载微信公众号文章并保存为Markdown格式的Python工具。支持多种输入方式：直接使用URL、URL列表文件或Excel文件批量下载。
 
 ## ✨ 功能特性
 
@@ -31,41 +31,7 @@ pip install -r requirements.txt
 
 ### 2. 一键下载
 
-**从 WeChat Exporter 导出Excel后，直接运行：**
-
-```bash
-python wechat_article_downloader.py 微信公众号文章.xlsx
-```
-
-就这么简单！程序会自动：
-1. 从Excel文件提取所有URL
-2. 批量下载所有文章和图片
-3. 同时生成Markdown和PDF格式（默认）
-
-## 📖 详细使用说明
-
-### 方法1：从Excel文件一键下载（推荐，最简单）
-
-1. 访问 [wechat-article-exporter](https://down.mptext.top)
-2. 搜索并选择要下载的公众号
-3. 点击"导出"按钮，选择"Excel"格式
-4. 下载Excel文件
-5. 运行下载命令：
-   ```bash
-   python wechat_article_downloader.py 微信公众号文章.xlsx
-   ```
-
-**就这么简单！** 程序会自动完成所有操作。
-
-### 方法2：从URL列表文件下载
-
-如果您已经有URL列表文件（每行一个URL）：
-
-```bash
-python wechat_article_downloader.py -f urls.txt
-```
-
-### 方法3：直接指定URL
+**最简单的方式：直接使用URL**
 
 ```bash
 # 单个URL
@@ -74,6 +40,49 @@ python wechat_article_downloader.py -u "https://mp.weixin.qq.com/s/xxxxx"
 # 多个URL
 python wechat_article_downloader.py -u "url1" "url2" "url3"
 ```
+
+就这么简单！程序会自动：
+1. 下载文章内容和所有图片
+2. 转换为Markdown格式
+3. 同时生成PDF格式（默认）
+
+**其他方式：**
+- 从URL列表文件：`python wechat_article_downloader.py -f urls.txt`
+- 从Excel文件：`python wechat_article_downloader.py 微信公众号文章.xlsx`（如果使用exporter工具导出Excel）
+
+## 📖 详细使用说明
+
+### 方法1：直接指定URL（最简单，推荐）
+
+直接复制粘贴文章URL即可下载：
+
+```bash
+# 单个URL
+python wechat_article_downloader.py -u "https://mp.weixin.qq.com/s/xxxxx"
+
+# 多个URL（一次下载多篇文章）
+python wechat_article_downloader.py -u "url1" "url2" "url3"
+```
+
+**就这么简单！** 程序会自动完成所有操作。
+
+### 方法2：从URL列表文件下载
+
+如果您有多个URL，可以创建一个文本文件（每行一个URL）：
+
+```bash
+python wechat_article_downloader.py -f urls.txt
+```
+
+### 方法3：从Excel文件下载（可选）
+
+如果您使用 [wechat-article-exporter](https://down.mptext.top) 等工具导出了Excel文件，也可以直接使用：
+
+```bash
+python wechat_article_downloader.py 微信公众号文章.xlsx
+```
+
+程序会自动识别Excel文件中的URL列并批量下载。
 
 ### 方法4：选择下载格式
 
@@ -138,12 +147,12 @@ A: 程序会自动控制请求频率，避免被封。如果太慢，可以：
 - 检查网络连接
 - 减少并发请求（修改代码中的延迟时间）
 
-### Q: 如何获取Excel文件？
+### Q: 如何批量下载多篇文章？
 
-A: 使用 [wechat-article-exporter](https://down.mptext.top) 工具：
-1. 搜索并选择公众号
-2. 点击"导出" → "Excel"
-3. 下载Excel文件
+A: 有多种方式：
+1. **直接使用URL**（最简单）：`python wechat_article_downloader.py -u "url1" "url2" "url3"`
+2. **使用URL列表文件**：创建 `urls.txt` 文件，每行一个URL，然后运行 `python wechat_article_downloader.py -f urls.txt`
+3. **使用Excel文件**（可选）：如果您使用 [wechat-article-exporter](https://down.mptext.top) 等工具导出了Excel文件，可以直接使用 `python wechat_article_downloader.py 文件名.xlsx`
 
 ### Q: 某些文章下载失败？
 
@@ -180,7 +189,7 @@ A: PDF生成需要额外的依赖包。如果失败，请检查：
 
 ## 🙏 致谢
 
-- 感谢 [wechat-article-exporter](https://github.com/wechat-article/wechat-article-exporter) 项目提供URL获取思路和工具
+- 感谢 [wechat-article-exporter](https://github.com/wechat-article/wechat-article-exporter) 项目提供参考思路
 
 ## 📝 许可证
 
